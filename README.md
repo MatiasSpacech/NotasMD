@@ -14,7 +14,7 @@ Monousuario en localhost, sin autenticación: frontend en `http://localhost:3000
 - **Plantillas**: crea notas desde plantillas predefinidas.
 - **Auto-formateo**: normaliza el Markdown con vista previa de cambios antes de aplicar.
 - **Importar / exportar**: ZIP completo (incluye `.md`, `.txt` y `.pdf`, que se convierten a `.md`) y descarga de respaldo en `.zip`.
-- **Configuración** (botón ⚙️ o `Ctrl+,`): cambia la carpeta donde se guardan los `.md`, el máximo de versiones por nota, el tema claro/oscuro, si la vista previa y los backlinks arrancan visibles, y restablece los anchos de los paneles.
+- **Configuración** (botón ⚙️ o `Ctrl+,`): cambia la carpeta donde se guardan los `.md` (con botón para abrirla en el explorador), el máximo de versiones por nota, el tema claro/oscuro, si la vista previa y los backlinks arrancan visibles, y restablece los anchos de los paneles.
 - **Tema claro/oscuro** y paneles redimensionables (sidebar y vista previa).
 
 ## 🚀 Stack
@@ -63,7 +63,7 @@ Botón ⚙️ en la barra superior o atajo `Ctrl+,`:
 
 | Opción | Qué hace |
 |--------|----------|
-| Carpeta de notas | Dónde se guardan los `.md`. Muestra nº de notas, si es escribible y la ruta del historial. Al guardar, se recargan notas y carpetas |
+| Carpeta de notas | Dónde se guardan los `.md`. Muestra nº de notas, si es escribible y la ruta del historial. Al guardar, se recargan notas y carpetas. El botón **Abrir ubicación** la abre en el explorador del sistema |
 | Máx. versiones por nota | Entero 1–500 para el historial (`POST /api/config { maxVersions }`) |
 | Tema | Claro / oscuro (se guarda en el navegador) |
 | Vista previa / backlinks al arrancar | Se aplican al recargar la página |
@@ -86,6 +86,7 @@ Base `http://localhost:3001/api`.
 |--------|------|-------------|
 | `GET` | `/api` | Health check |
 | `GET/POST` | `/api/config` | Ver/actualizar `{noteFolder, maxVersions}` |
+| `POST` | `/api/config/open-folder` | Abrir la carpeta de notas en el explorador del sistema |
 | `GET/POST` | `/api/notes` | Listar / crear `{title, folder?, content?, tags?}` |
 | `GET/PUT/DELETE` | `/api/notes/:id` | Leer / actualizar / eliminar (crea snapshot) |
 | `GET` | `/api/notes/:id/backlinks` | Notas que enlazan a esta |
@@ -168,4 +169,4 @@ NotasMD/
 
 ## 📝 Licencia
 
-MIT
+GPL

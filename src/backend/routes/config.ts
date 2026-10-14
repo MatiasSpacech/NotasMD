@@ -1,4 +1,5 @@
 import express from 'express';
+import { spawn } from 'child_process';
 import { getConfig, validateConfig, ensureDir, updateConfig, checkWritable } from '../config';
 import { getAllMdFiles } from '../services/filesystem';
 
@@ -44,6 +45,40 @@ router.get('/', async (req, res) => {
     console.error('[routes/config] Error en GET /api/config:', error);
     res.status(500).json({
       error: 'Error al obtener la configuración',
+      details: error.message,
+    });
+  }
+});
+
+// ============================================================
+// POST /api/config/open-folder — Abre la carpeta de notas en el explorador
+// (solo la carpeta configurada, sin parámetros: el backend corre en localhost)
+// ============================================================
+router.post('/open-folder', async (req, res) => {
+  try {
+    const config = getConfig();
+    await ensureDir(config.noteFolder);
+    const bin =
+      process.platform === 'win32'
+        ? 'explorer.exe'
+        : process.platform === 'darwin'
+          ? 'open'
+          : 'xdg-open';
+    // Fire-and-forget: explorer.exe devuelve código 1 aunque abra bien,
+    // así que no esperamos su salida (detached + unref).
+    const child = spawn(bin, [config.noteFolder], {
+      detached: true,
+      stdio: 'ignore',
+    });
+    child.on('error', (spawnError) => {
+      console.error('[routes/config] No se pudo abrir la carpeta:', spawnError.message);
+    });
+    child.unref();
+    res.json({ opened: config.noteFolder });
+  } catch (error: any) {
+    console.error('[routes/config] Error en POST /api/config/open-folder:', error);
+    res.status(500).json({
+      error: 'No se pudo abrir la carpeta en el explorador',
       details: error.message,
     });
   }

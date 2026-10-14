@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FolderOpen } from 'lucide-react';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -49,6 +50,7 @@ export function SettingsDialog({
 }: SettingsDialogProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openingFolder, setOpeningFolder] = useState(false);
   const [config, setConfig] = useState<ConfigState | null>(null);
   const [noteFolder, setNoteFolder] = useState('');
   const [maxVersions, setMaxVersions] = useState(50);
@@ -164,6 +166,26 @@ export function SettingsDialog({
     }
   };
 
+  /** Abrir la carpeta de notas configurada en el explorador del sistema */
+  const handleOpenFolder = async () => {
+    setOpeningFolder(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/config/open-folder', {
+        method: 'POST',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        notify(data.details ? `${data.error}: ${data.details}` : (data.error ?? 'No se pudo abrir la carpeta'), 'error');
+        return;
+      }
+      notify(`Carpeta abierta: ${data.opened ?? ''}`, 'success');
+    } catch {
+      notify('No se pudo conectar con el backend', 'error');
+    } finally {
+      setOpeningFolder(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-30 flex items-center justify-center bg-black/60"
@@ -198,6 +220,7 @@ export function SettingsDialog({
               >
                 Carpeta donde se guardan los .md
               </label>
+              <div className="flex gap-2 items-start">
               <input
                 id="settings-note-folder"
                 data-testid="settings-note-folder"
@@ -205,8 +228,20 @@ export function SettingsDialog({
                 onChange={(e) => setNoteFolder(e.target.value)}
                 placeholder="C:\Users\...\Notas"
                 spellCheck={false}
-                className="w-full px-3 py-1.5 mb-1 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+                className="flex-1 min-w-0 px-3 py-1.5 mb-1 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
               />
+              <button
+                onClick={handleOpenFolder}
+                disabled={openingFolder || loading}
+                data-testid="settings-open-folder"
+                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 mb-1 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-200 rounded-md text-sm transition-colors"
+                title="Abrir la carpeta de notas en el explorador"
+                aria-label="Abrir ubicación de las notas"
+              >
+                <FolderOpen size={16} />
+                <span className="hidden sm:inline">{openingFolder ? 'Abriendo…' : 'Abrir ubicación'}</span>
+              </button>
+            </div>
               {config && (
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   {config.noteCount} nota(s) ·{' '}
