@@ -45,7 +45,7 @@ export function isFormatShortcut(e: KeyEventLike): boolean {
   return Boolean(e.ctrlKey || e.metaKey) && Boolean(e.shiftKey) && e.key.toLowerCase() === 'f';
 }
 
-export type GlobalAction = 'newNote' | 'deleteNote' | 'toggleHistory' | 'toggleHelp' | 'toggleBacklinks';
+export type GlobalAction = 'newNote' | 'deleteNote' | 'toggleHistory' | 'toggleHelp' | 'toggleBacklinks' | 'openSettings';
 
 /**
  * Atajos globales de la app (Fase 9, item 61).
@@ -55,6 +55,7 @@ export type GlobalAction = 'newNote' | 'deleteNote' | 'toggleHistory' | 'toggleH
 export function getGlobalAction(e: KeyEventLike): GlobalAction | null {
   if (!e.ctrlKey && !e.metaKey) return null;
   const key = e.key.toLowerCase();
+  if (key === ',') return 'openSettings';
   if (e.shiftKey) {
     if (key === 'h') return 'toggleHistory';
     if (key === 'm') return 'toggleHelp';

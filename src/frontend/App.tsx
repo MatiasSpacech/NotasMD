@@ -12,8 +12,9 @@ import { remapNoteIdAfterFolderMove, flattenFolderPaths } from './lib/folder-ids
 import { getGlobalAction, isEditableTarget } from './lib/shortcuts';
 import { useBacklinks } from './hooks/useBacklinks';
 import { useToast } from './hooks/useToast';
-import { Moon, Sun, Plus, FolderPlus, Folder, FileText, Link as LinkIcon, History, BookOpen, Download, Upload, Pencil, StickyNote } from 'lucide-react';
+import { Moon, Sun, Plus, FolderPlus, Folder, FileText, Link as LinkIcon, History, BookOpen, Download, Upload, Pencil, StickyNote, Settings } from 'lucide-react';
 import { ResizeHandle } from './components/ResizeHandle';
+import { SettingsDialog } from './components/SettingsDialog';
 
 // Drawers/modales pesados fuera del bundle inicial (Fase 9 optimize)
 const VersionHistory = lazy(() => import('./components/VersionHistory'));
@@ -99,10 +100,29 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window === 'undefined' || window.innerWidth >= 1024,
   );
-  const [previewOpen, setPreviewOpen] = useState(
-    () => typeof window === 'undefined' || window.innerWidth >= 768,
-  );
-  const [backlinksOpen, setBacklinksOpen] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      const stored = window.localStorage.getItem('notas-preview-default');
+      if (stored === '1') return true;
+      if (stored === '0') return false;
+    } catch {
+      // almacenamiento no disponible
+    }
+    return window.innerWidth >= 768;
+  });
+  const [backlinksOpen, setBacklinksOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      const stored = window.localStorage.getItem('notas-backlinks-default');
+      if (stored === '1') return true;
+      if (stored === '0') return false;
+    } catch {
+      // almacenamiento no disponible
+    }
+    return true;
+  });
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const sidebarPanel = usePanelWidth('notas-sidebar-width', 280, 200, 480);
   const previewPanel = usePanelWidth('notas-preview-width', 320, 240, 640);
   const [rightPanel, setRightPanel] = useState<'history' | 'help' | null>(null);
@@ -395,6 +415,11 @@ export default function App() {
       if (e.defaultPrevented) return;
       const action = getGlobalAction(e);
       if (!action) return;
+      if (action === 'openSettings') {
+        e.preventDefault();
+        setSettingsOpen(true);
+        return;
+      }
       if (action === 'toggleHistory') {
         e.preventDefault();
         togglePanel('history');
@@ -671,6 +696,15 @@ export default function App() {
         <button onClick={() => setDarkMode(!darkMode)} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors" title={darkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'} aria-label={darkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}>
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
+        <button
+          onClick={() => setSettingsOpen(true)}
+          className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+          title="Configuración (Ctrl+,)"
+          aria-label="Abrir configuración"
+          data-testid="settings-button"
+        >
+          <Settings size={18} />
+        </button>
       </header>
 
       {/* Main Content */}
@@ -874,6 +908,17 @@ export default function App() {
         busy={confirmBusy}
         onConfirm={() => confirmDeleteFolder(true)}
         onCancel={() => setConfirm(null)}
+      />
+      <SettingsDialog
+        open={settingsOpen}
+        darkMode={darkMode}
+        onSetDarkMode={setDarkMode}
+        onClose={() => setSettingsOpen(false)}
+        onSaved={async () => {
+          await fetchNotes();
+          await fetchFolders();
+        }}
+        notify={pushToast}
       />
       <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
