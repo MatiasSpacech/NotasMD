@@ -9,3 +9,6 @@ playwright/.cache/
 .DS_Store
 *.tsbuildinfo
 .notas-history/
+
+# Plan local (no se sube al repo)
+plan-notas-app.md
