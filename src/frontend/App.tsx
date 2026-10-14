@@ -248,7 +248,7 @@ export default function App() {
   const handleUpdateNote = async (id: string, content: string) => {
     setIsSaving(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/notes/${id}`, {
+      const res = await fetch(`http://localhost:3001/api/notes/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
@@ -282,7 +282,7 @@ export default function App() {
     if (!confirm || confirm.kind !== 'note') return;
     setConfirmBusy(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/notes/${confirm.id}`, { method: 'DELETE' });
+      const res = await fetch(`http://localhost:3001/api/notes/${encodeURIComponent(confirm.id)}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         pushToast(data.error ?? 'No se pudo eliminar la nota', 'error');
@@ -616,7 +616,7 @@ export default function App() {
     }
     const oldId = selectedNote.id;
     try {
-      const res = await fetch(`http://localhost:3001/api/notes/${oldId}`, {
+      const res = await fetch(`http://localhost:3001/api/notes/${encodeURIComponent(oldId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: next }),

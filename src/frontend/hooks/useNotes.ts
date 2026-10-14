@@ -49,7 +49,7 @@ export function useNotes() {
 
   const updateNote = useCallback(async (id: string, content: string): Promise<boolean> => {
     try {
-      const res = await fetch(`http://localhost:3001/api/notes/${id}`, {
+      const res = await fetch(`http://localhost:3001/api/notes/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
@@ -65,7 +65,7 @@ export function useNotes() {
 
   const deleteNote = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const res = await fetch(`http://localhost:3001/api/notes/${id}`, { method: 'DELETE' });
+      const res = await fetch(`http://localhost:3001/api/notes/${encodeURIComponent(id)}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete note');
       setNotes((prev) => prev.filter((n) => n.id !== id));
       return true;
